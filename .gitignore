@@ -4,6 +4,9 @@
 # Ignore paths that contain user-generated content.
 sites/*/files
 sites/*/private
+
+# Ignore aegir generated code
+drushrc.php
 sites/*/drushrc.php
 
 # Ignore other git repos
