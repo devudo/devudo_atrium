@@ -7,7 +7,8 @@ sites/*/private
 # Ignore aegir generated code
 drushrc.php
 sites/*/drushrc.php
-sites/*/settings*.php
+sites/*/settings.php
+sites/*/default.settings.php
 
 # Ignore other git repos
 *.git
