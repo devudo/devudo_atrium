@@ -94,6 +94,12 @@ class views_object {
       }
       else if (!empty($definition[$key]['translatable']) && !empty($value)) {
         $storage[$key] = t($value);
+
+        // Store translatable properties in an array for export.
+        $this->view->translatables = isset($this->view->translatables) ? $this->view->translatables : array();
+        if (!in_array($value, $this->view->translatables, TRUE)) {
+          $this->view->translatables[] = $value;
+        }
       }
       else {
         $storage[$key] = $value;

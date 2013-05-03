@@ -1546,6 +1546,16 @@ class view extends views_db_object {
       }
     }
 
+    // Export translatable properties.
+    // Special handling for display titles.
+    $this->translatables = isset($this->translatables) ? $this->translatables : array();
+    foreach ($this->display as $id => $display) {
+      if (!empty($display->handler) && isset($display->display_title) && !in_array($display->display_title, $this->translatables)) {
+        $this->translatables[] = $display->display_title;
+      }
+    }
+    $output .= !empty($this->translatables) ? $this->export_translatables($indent) : '';
+
     return $output;
   }
 
@@ -1841,6 +1851,26 @@ class views_db_object {
       }
 
       $output .= $indent . '$' . $identifier . '->' . $field . ' = ' . views_var_export($value, $indent) . ";\n";
+    }
+    return $output;
+  }
+
+  /**
+   * Export an array of translatable strings.
+   *
+   * @param $indent
+   *   An optional indentation for prettifying nested code.
+   */
+  function export_translatables($indent = '') {
+    $output = '';
+    if (!empty($this->translatables)) {
+      $this->translatables = array_unique($this->translatables);
+      sort($this->translatables);
+      $output = $indent . '$translatables[\'' . $this->name . '\'] = array(' . "\n";
+      foreach ($this->translatables as $string) {
+        $output .= $indent . "  t('" . str_replace("'", "\'", $string) . "'),\n";
+      }
+      $output .= $indent . ");\n";
     }
     return $output;
   }

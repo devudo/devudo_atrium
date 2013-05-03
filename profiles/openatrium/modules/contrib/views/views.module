@@ -569,8 +569,8 @@ function views_include($file) {
 /**
  * Load views files on behalf of modules.
  */
-function views_module_include($file) {
-  foreach (views_get_module_apis() as $module => $info) {
+function views_module_include($file, $reset = FALSE) {
+  foreach (views_get_module_apis($reset) as $module => $info) {
     if (file_exists("./$info[path]/$module.$file")) {
       require_once "./$info[path]/$module.$file";
     }
@@ -580,9 +580,9 @@ function views_module_include($file) {
 /**
  * Get a list of modules that support the current views API.
  */
-function views_get_module_apis() {
+function views_get_module_apis($reset = FALSE) {
   static $cache = NULL;
-  if (!isset($cache)) {
+  if (!isset($cache) || $reset) {
     $cache = array();
     foreach (module_implements('views_api') as $module) {
       $function = $module . '_views_api';
@@ -630,10 +630,10 @@ function views_add_js($file) {
 /**
  * Load views files on behalf of modules.
  */
-function views_include_handlers() {
+function views_include_handlers($reset = FALSE) {
   static $finished = FALSE;
   // Ensure this only gets run once.
-  if ($finished) {
+  if ($finished && !$reset) {
     return;
   }
 
@@ -641,26 +641,26 @@ function views_include_handlers() {
   views_include('handlers');
   views_include('cache');
   views_include('plugins');
-  _views_include_handlers();
+  _views_include_handlers($reset);
   $finished = TRUE;
 }
 
 /**
  * Load default views files on behalf of modules.
  */
-function views_include_default_views() {
+function views_include_default_views($reset = FALSE) {
   static $finished = FALSE;
   // Ensure this only gets run once.
-  if ($finished) {
+  if ($finished && !$reset) {
     return;
   }
 
   // Default views hooks may be in the normal handler file,
   // or in a separate views_default file at the discretion of
   // the module author.
-  views_include_handlers();
+  views_include_handlers($reset);
 
-  _views_include_default_views();
+  _views_include_default_views($reset);
   $finished = TRUE;
 }
 
@@ -747,18 +747,20 @@ function views_get_plugin($type, $plugin) {
  * @return
  *   A view object or NULL if it is not available.
  */
-function &views_get_default_view($view_name) {
+function &views_get_default_view($view_name, $reset = FALSE) {
   $null = NULL;
 
   // Attempt to load individually cached view from cache.
   views_include('cache');
-  $data = views_cache_get("views_default:{$view_name}", TRUE);
-  if (isset($data->data) && is_object($data->data)) {
-    return $data->data;
+  if (!$reset) {
+    $data = views_cache_get("views_default:{$view_name}", TRUE);
+    if (isset($data->data) && is_object($data->data)) {
+      return $data->data;
+    }
   }
 
   // Otherwise, allow entire cache to be rebuilt.
-  $cache = views_discover_default_views();
+  $cache = views_discover_default_views($reset);
   if (isset($cache[$view_name])) {
     return $cache[$view_name];
   }
@@ -786,12 +788,12 @@ function views_new_view() {
  *
  * @return An associative array of all known default views.
  */
-function views_discover_default_views() {
+function views_discover_default_views($reset = FALSE) {
   static $cache = array();
 
-  if (empty($cache)) {
+  if (empty($cache) || $reset) {
     views_include('cache');
-    $cache = _views_discover_default_views();
+    $cache = _views_discover_default_views($reset);
   }
   return $cache;
 }
@@ -866,7 +868,7 @@ function views_get_all_views($reset = FALSE) {
     // Get all default views.
     $status = variable_get('views_defaults', array());
 
-    foreach (views_discover_default_views() as $view) {
+    foreach (views_discover_default_views($reset) as $view) {
       // Determine if default view is enabled or disabled.
       if (isset($status[$view->name])) {
         $view->disabled = $status[$view->name];
@@ -904,7 +906,7 @@ function views_get_all_views($reset = FALSE) {
 function views_get_view($name, $reset = FALSE) {
   views_include('view');
   $view = view::load($name, $reset);
-  $default_view = views_get_default_view($name);
+  $default_view = views_get_default_view($name, $reset);
 
    // The view does not exist.
   if (empty($view) && empty($default_view)) {

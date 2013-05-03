@@ -59,6 +59,20 @@ function taxonomy_views_data() {
       'name field' => 'name',
     ),
   );
+  $data['vocabulary']['module'] = array(
+    'title' => t('Vocabulary module'),
+    'help' => t('The owner module of the vocabulary'),
+    'filter' => array(
+      'handler' => 'views_handler_filter_vocabulary_module',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+      'name field' => 'name',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
 
   // ----------------------------------------------------------------------
   // term_data table
@@ -429,6 +443,9 @@ function taxonomy_views_handlers() {
         'parent' => 'views_handler_field',
       ),
       'views_handler_filter_vocabulary_vid' => array(
+        'parent' => 'views_handler_filter_in_operator',
+      ),
+      'views_handler_filter_vocabulary_module' => array(
         'parent' => 'views_handler_filter_in_operator',
       ),
       'views_handler_filter_term_node_tid' => array(
