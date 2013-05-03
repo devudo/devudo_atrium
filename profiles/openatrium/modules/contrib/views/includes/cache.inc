@@ -9,15 +9,15 @@
 /**
  * Load views files on behalf of modules.
  */
-function _views_include_handlers($reset = FALSE) {
-  views_module_include('views.inc', $reset);
+function _views_include_handlers() {
+  views_module_include('views.inc');
 }
 
 /**
  * Load default views files on behalf of modules.
  */
-function _views_include_default_views($reset = FALSE) {
-  views_module_include('views_default.inc', $reset);
+function _views_include_default_views() {
+  views_module_include('views_default.inc');
 }
 
 /**
@@ -95,14 +95,14 @@ function _views_fetch_plugin_data($type = NULL, $plugin = NULL) {
  *
  * @return An associative array of all known default views.
  */
-function _views_discover_default_views($reset = FALSE) {
+function _views_discover_default_views() {
   static $cache = NULL;
 
-  if (!isset($cache) || $reset) {
+  if (!isset($cache)) {
     $index = views_cache_get('views_default_views_index', TRUE);
 
     // Retrieve each cached default view
-    if (!$reset && isset($index->data) && is_array($index->data)) {
+    if (isset($index->data) && is_array($index->data)) {
       $cache = array();
       foreach ($index->data as $view_name) {
         $data = views_cache_get('views_default:' . $view_name, TRUE);
@@ -113,7 +113,7 @@ function _views_discover_default_views($reset = FALSE) {
     }
     // If missing index, rebuild the cache
     else {
-      views_include_default_views($reset);
+      views_include_default_views();
       $cache = array();
 
       foreach(module_implements('views_default_views') as $module) {
